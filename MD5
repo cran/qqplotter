@@ -1,0 +1,12 @@
+aeb562fb2efaacd23fdf9b7e1898e535 *DESCRIPTION
+94807b187abd0131ab188ab6f78c61b0 *R/NorthAmerica.R
+4f2a9221b93079daff127b1182be16ae *R/qqplotter.R
+9a84e33722f868c117f751371b7b26c1 *demo/00Index
+d308c91623b8682f9704c5cf62498d8d *demo/GDCN.R
+d2c8a757d85b8a6053d610f898bb74eb *demo/coast.R
+7734211fcbb855d9db8fed851f03bb89 *demo/qbplot.xy.R
+e0717fa21f88df25c2af682ec366ed5e *demo/qfigs.R
+e1d696f00e8c7ff12eb39925b2cb4e30 *man/NorthAmerica.Rd
+0c790cc651196715e51e1368d95436ec *man/extras.Rd
+a91a97074d069e74bed388cdafb5fa28 *man/processing.Rd
+2a337f557d712b872e0633193fbb5e68 *man/qqplotter.Rd
