@@ -22,7 +22,7 @@ Points(x,y)
 Lines(t,y,col="black",
       tshadeoffset=0.03,yshadeoffset=0.03)
 colorbar(ckey,fig=c(0.33,0.66,0.30,0.34))
-pointdensity(x1,x2,resol=10)
+pointdensity(x1,x2,resol=NULL)
 Sum.is.zero(X) 
 Sum.gt.zero(X)
 testqPCA2quantile(mu.qp=NULL,subset=1:1000,n.eofs=2)
@@ -53,10 +53,17 @@ replace.char(c, s, ny.c)
 }
 
 \value{
+  \code{pointdensity} gives a matrix of point density
+  \code{Sum.is.zero} and \code{Sum.gt.zero} return sums calculated over
+  a data.frame.
+  \code{replace.char} returns a string with one character replaced.
 }
 \author{R.E. Benestad}
 \examples{
-
+x <- rnorm(1000); y <- rnorm(1000)
+pd <- pointdensity(x,y)
+plot(x,y,pch=19,col="grey")
+contour(pd$x,pd$y,pd$z,add=TRUE)
 }
 \keyword{hplot}
 \keyword{manip}

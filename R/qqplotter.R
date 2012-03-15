@@ -15,7 +15,7 @@ estquantiles <- function(mu.qp,
   if ( (class(mu.qp)!="qqplotter") & ((class(mu.qp)!="matrix")) ) {
     Xn <- -log(1-prs)*mu.qp
   } else {
-    print("estquantiles - detected a matrix")
+    #print("estquantiles - detected a matrix")
     mu <- attr(mu.qp,"mu")
     if (length(attr(mu.qp,'probabilities'))>0)
       prs <- attr(mu.qp,"probabilities")
@@ -130,8 +130,8 @@ qPCA <- function(mu.qp,plot=TRUE) {
   # distribution and the actual percentiles.
   x1<- pca$u[1:n1,]
   x2 <-pca$u[(n1+1):d[1],]
-  attr(x1,"description") <- "-log(1-prs)*mu"
-  attr(x2,"description") <- "quantile(X,p)"
+  attr(x2,"description") <- "-log(1-prs)*mu"
+  attr(x1,"description") <- "quantile(X,p)"
   pca$x1 <- x1
   pca$qp <- x2
   pca$var <- 100*pca$d^2/sum(pca$d^2)
@@ -181,11 +181,12 @@ qPCA2quantile <- function(x,pca,p=0.95,silent=FALSE) {
   attr(pca,"n1") -> n1; d <- dim(pca$u)
   
   if (class(x)=="matrix") {
-    if (!silent) print("Taking x to be a matrix")
     D <- dim(x); n.eofs <- D[2];
+    if (!silent) print(paste("Taking x to be a matrix with",n.eofs,"modes"))    
   # Reconstruct the data from the EOFs, replacing the original PCs with x
     X <- pca$u[,1:n.eofs] %*% diag(pca$d[1:n.eofs]) %*% t(x)
   # Extract the part of the data describing the 'actual' quantiles:
+    if (!silent) {print(dim(X));print(paste("n1+1=",(n1+1),"d[1]=",d[1]))}
     x2 <-X[(n1+1):d[1],]
   } else if (class(x)=="numeric") {
     if (length(x) <=2) {
@@ -205,14 +206,15 @@ qPCA2quantile <- function(x,pca,p=0.95,silent=FALSE) {
       x2 <-X[(n1+1):d[1],]
     }   
   }
-
   ip <- is.element(attr(pca,"probabilities"),p)
+  #print("HERE");print(length(ip)); print(dim(x2))
   if (sum(ip)==1) {
     if (is.matrix(x2)) percentile <- x2[ip,] else
                        percentile <- x2[ip]
   } else {
     # Interpolate
     if (is.matrix(x2)) {
+      print("Interpolate")
       percentile <- rep(NA,dim(x2)[2])
       for (i in 1:dim(x2)[2])
         percentile[i] <- approx(attr(pca,"probabilities"),x2,p)$y
@@ -327,7 +329,7 @@ mapofstations <- function(mu.qp,colourcoding="0.95",add=FALSE,silent=FALSE,
   if (!add) {
     par(las=1)
     plot(attr(mu.qp,"longitude"),attr(mu.qp,"latitude"),
-                type="n",main=colourcoding,xlab="",ylab="",
+                type="n",main=colourcoding,xlab="",ylab="",ylim=c(-90,90),
                 xlim=range(attr(mu.qp,"longitude"),na.rm=TRUE)+c(-45,0))
   }
   points(attr(mu.qp,"longitude"),attr(mu.qp,"latitude"),
@@ -336,10 +338,10 @@ mapofstations <- function(mu.qp,colourcoding="0.95",add=FALSE,silent=FALSE,
   s <- seq(0,1,length=100)
   colkey1 <- rgb( (1-s)^0.5,rep(0,100),s^0.5)
   #print(Pmax); print(summary(crit))
-  text(-183,-60,colourcoding,cex=0.75,srt=90)
-  text(-210,-45,round(max(crit,na.rm=TRUE),1),cex=0.75,col="grey30")
-  text(-210,-75,round(min(crit,na.rm=TRUE),1),cex=0.75,col="grey30")
-  colorbar(colkey1,c(0.15,0.2,0.20,0.30))
+  text(-205,-73,colourcoding,cex=0.75,srt=90,pos=4)
+  text(-215,-52,round(max(crit,na.rm=TRUE),1),cex=0.75,col="grey30")
+  text(-215,-82,round(min(crit,na.rm=TRUE),1),cex=0.75,col="grey30")
+  colorbar(colkey1,c(0.15,0.18,0.22,0.30))
 
   if (googleearth)  {
     # Makes a GoogleEarth file, so the locations can be shown in
@@ -376,6 +378,7 @@ mapofstations <- function(mu.qp,colourcoding="0.95",add=FALSE,silent=FALSE,
     kmz.cont <- c(kmz.cont,'</Document>','</kml>')
     writeLines(kmz.cont, kmz.file)
   }
+  invisible(cols)
 }
 
 
@@ -437,14 +440,37 @@ qcat <- function(mu.qp1,mu.qp2) {
   invisible(mu.qp)
 }
 
-
-
+qsubset <- function(mu.qp,crit="attr(mu.qp,'probabilities') <= 0.99") {
+  print(paste("qsubset(select='",crit,"')"))
+  eval(parse(text=paste("keep=",crit)))
+  print(paste("Keeping",sum(keep,na.rm=TRUE),"percentiles"))
+  mu.qp <- mu.qp.all[keep,]
+  attr(mu.qp,"description") <- attr(mu.qp.all,"description")
+  attr(mu.qp,"mean_precip") <- attr(mu.qp.all,"mean_precip")
+  attr(mu.qp,"mu") <- attr(mu.qp.all,"mu")
+  attr(mu.qp,"longitude") <- attr(mu.qp.all,"longitude")
+  attr(mu.qp,"latitude") <- attr(mu.qp.all,"latitude")
+  attr(mu.qp,"station_number") <- attr(mu.qp.all,"station_number")
+  attr(mu.qp,"altitude") <- attr(mu.qp.all,"altitude")
+  attr(mu.qp,"n.wet") <- attr(mu.qp.all,"n.wet")
+  attr(mu.qp,"n.dry") <- attr(mu.qp.all,"n.dry")
+  attr(mu.qp,"sigma") <- attr(mu.qp.all,"sigma")
+  attr(mu.qp,"rmse") <- attr(mu.qp.all,"rmse")
+  attr(mu.qp,"country") <- attr(mu.qp.all,"country")
+  attr(mu.qp,"history") <- attr(mu.qp.all,"history")
+  attr(mu.qp,"probabilities") <- attr(mu.qp.all,"probabilities")
+  attr(mu.qp,"formulae") <- attr(mu.qp.all,"formulae")
+  attr(mu.qp,"dist2coast.km") <- attr(mu.qp.all,"dist2coast.km")
+  attr(mu.qp,"probabilities") <- attr(mu.qp.all,"probabilities")[keep]
+  class(mu.qp) <- class(mu.qp.all)
+  invisible(mu.qp)
+}
 
 
 qweed <- function(mu.qp,crit="attr(mu.qp,'n.wet')> 1000") {
   # A tool to weed out stations according to a given criteria.
   if (class(mu.qp)!="qqplotter") stop("qweed: need 'qqplotter' object")
-  print(paste("qweed(iweed='",crit,"')"))
+  print(paste("qweed(weed='",crit,"')"))
   eval(parse(text=paste("iweed=",crit)))
   print(paste("Keeping",sum(iweed,na.rm=TRUE),"data points"))
   print(c(length(iweed),dim(mu.qp)))
@@ -480,7 +506,7 @@ cleanduplicates <- function(mu.qp,silent=TRUE,plot=FALSE) {
   mu.qp <- qweed(mu.qp,crit="is.finite(attr(mu.qp,'latitude'))")
   lons <- round(attr(mu.qp,"longitude"),4)
   lats <- round(attr(mu.qp,"latitude"),4)
-  if (plot) plot(lons,lats,cex=0.5); addland()
+  if (plot) {plot(lons,lats,cex=0.5); addland()}
   N <- length(lons)
   lonlats <- paste(round(lons,4),"E/",round(lats,4),"N",sep="")
   lonlat.tab <- table(lonlats)
@@ -504,11 +530,13 @@ cleanduplicates <- function(mu.qp,silent=TRUE,plot=FALSE) {
                     dupl[i]))
         print(paste("sum(lonlat.tab[lonlat.tab > 1 ])=",
                     sum(lonlat.tab[lonlat.tab > 1 ])))
-        dev.new()
-        plot(attr(mu.qp,"longitude"),attr(mu.qp,"latitude"),
+        if (plot) {
+          dev.new()
+          plot(attr(mu.qp,"longitude"),attr(mu.qp,"latitude"),
              pch=19,col="grey",xlim=c(-180,180),ylim=c(-90,90)); addland()
-        points(attr(mu.qp,"longitude")[ii],attr(mu.qp,"latitude")[ii],
+          points(attr(mu.qp,"longitude")[ii],attr(mu.qp,"latitude")[ii],
              pch=19,col="red")
+        }
         print(attr(mu.qp,"longitude")[ii])
         print(attr(mu.qp,"latitude")[ii])
         print(attr(mu.qp,"n.wet")[ii])
@@ -565,17 +593,26 @@ dist2coast <- function(mu.qp) {
 }
 
 
-pointdensity <- function(x1,x2,resol=10) {
+pointdensity <- function(x1,x2,resol=NULL) {
   # Creates a density map of from a scatter plot.
 
-  require( LatticeKrig)
-
+  #require( LatticeKrig)
+  good <- is.finite(x1) & is.finite(x2)
+  x1 <- x1[good]; x2 <- x2[good]
+  n <- length(x1); nn <- max(c(10,round(n/100)))
+  
+  if (is.null(resol)) {
+    resol <- 0.5* ( max(x1) - min(x1) )/nn +
+             0.5* ( max(x2) - min(x2) )/nn
+  }
   x1 <- round(x1/resol)
   x2 <- round(x2/resol)
   freq <- table(x1,x2); Y <- as.matrix(freq)
   x <- as.numeric(rownames(freq))*resol
   y <- as.numeric(colnames(freq))*resol
-
+  X1 <- min(x); X2 <- max(x)
+  Y1 <- min(y); Y2 <- max(y)
+  
   Y[Y < 0] <- 0
   points <- data.frame(x=rep(x,length(y)),y=sort(rep(y,length(x))),
                            z=c(Y))
@@ -585,8 +622,8 @@ pointdensity <- function(x1,x2,resol=10) {
   #contour(x,y,Y,add=TRUE,col="red")
   
   pdens <- with(points, interp(x, y, z,
-                               xo=seq(0,400, length=1000),
-                               yo=seq(0,400, length=1000)))
+                               xo=seq(X1,X2, length=1000),
+                               yo=seq(Y1,Y2, length=1000)))
     
   #contour(pdens$x,pdens$y,pdens$z,add=TRUE)
 
@@ -637,12 +674,14 @@ qplotGDCN <- function(x.0=1,Pmax=180,
 
   for (i in i1:N) {
     X <- readGDCN(list[i])
-    meanP[i] <- round(mean(X,na.rm=TRUE),2)
-    n.dry[i] <- sum(X < x.0,na.rm=TRUE)
-    n.wet[i] <- sum(X >= x.0,na.rm=TRUE)
-    sigma[i] <- round(var(c(X[X >= x.0]),na.rm=TRUE),2)
-    imatch <- is.element(gdcn.inv$stnr,attr(X,"Station_number"))
-    if (sum(imatch)>0) {
+    imatch <- (sum(is.element(gdcn.inv$stnr,attr(X,"Station_number"))>0)) &
+              (sum(X >= x.0,na.rm=TRUE) > 100)
+    if (imatch) {
+      meanP[i] <- round(mean(X,na.rm=TRUE),2)
+      n.dry[i] <- sum(X < x.0,na.rm=TRUE)
+      n.wet[i] <- sum(X >= x.0,na.rm=TRUE)
+      if (n.wet[i]>100)
+        sigma[i] <- round(var(c(X[X >= x.0]),na.rm=TRUE),2)
       lat[i] <- gdcn.inv$lat[imatch]
       lon[i] <- gdcn.inv$lon[imatch]
       alt[i] <- gdcn.inv$alt[imatch]
@@ -801,7 +840,7 @@ qplotESCN <- function(x.0=1,Pmax=180,
     meanP[i] <- round(mean(X,na.rm=TRUE),2)
     n.dry[i] <- sum(X < x.0,na.rm=TRUE)
     n.wet[i] <- sum(X >= x.0,na.rm=TRUE)
-    sigma[i] <- round(var(X[X >= x.0],na.rm=TRUE),2)
+    if (n.wet[i]>100) sigma[i] <- round(var(X[X >= x.0],na.rm=TRUE),2)
 
     # If specified, only include given months
     if (!is.null(months)) X <- X[is.element(escn$month,months)]
@@ -828,8 +867,8 @@ qplotESCN <- function(x.0=1,Pmax=180,
       if (mod(i,1000)==0) {
       # Intermediate save:
       i1 <- i+1
-      save("readESCN.temp.rda",i1,mu,rmse,mu.qp,stnr,meanP,n.dry,n.wet,sigma,
-           lat,lon,alt,country)
+      save(file="readESCN.temp.rda",i1,mu,rmse,mu.qp,stnr,
+           meanP,n.dry,n.wet,sigma,lat,lon,alt,country)
     }
     }
   } # End-of-loop: station files
@@ -879,8 +918,8 @@ qplotESCN <- function(x.0=1,Pmax=180,
   colorbar(colkey1,c(0.17,0.23,0.6,0.75))
 
   # Saved the graphics"
-  dev2bitmap(file="qqplotter4.pdf",type="pdfwrite")
-  dev2bitmap(file="qqplotter4.png",res=150)
+  #dev2bitmap(file="qqplotter4.pdf",type="pdfwrite")
+  #dev2bitmap(file="qqplotter4.png",res=150)
   #dev.copy2eps(file="qqplotter4.eps")
 
   invisible(mu.qp.escn)
@@ -1096,14 +1135,14 @@ qplotRCM <- function(mu.qp=NULL,x.0=1,sim.rng=TRUE,
                                      "ENSEMBLES")
   Xn <- estquantiles(mu.qp.rcm)
   if ( (do.narccap) & (sum(narccap)>100) ) {
-    pd1 <- pointdensity(c(Xn[,narccap]),c(mu.qp.rcm[,narccap]),res=1)
+    pd1 <- pointdensity(c(Xn[,narccap]),c(mu.qp.rcm[,narccap]),resol=1)
     contour(pd1$x,pd1$y,pd1$z,add=TRUE,col="darkred",
             lev=seq(25,20000,by=5000))
   }
   if ( (do.ensembles) & (sum(ensembles)>100) ) {
     print(summary(c(Xn[,ensembles])))
     print(summary(c(mu.qp.rcm[,ensembles])))
-    pd2 <- pointdensity(c(Xn[,ensembles]),c(mu.qp.rcm[,ensembles]),res=1)
+    pd2 <- pointdensity(c(Xn[,ensembles]),c(mu.qp.rcm[,ensembles]),resol=1)
     contour(pd2$x,pd2$y,pd2$z,add=TRUE,col="lightblue",
             lev=seq(25,20000,by=5000))
   }
@@ -1111,8 +1150,8 @@ qplotRCM <- function(mu.qp=NULL,x.0=1,sim.rng=TRUE,
   grid()
   
   # Saved the graphics"
-  dev2bitmap(file="qqplotter2.pdf",type="pdfwrite")
-  dev2bitmap(file="qqplotter2.png",res=150)
+  #dev2bitmap(file="qqplotter2.pdf",type="pdfwrite")
+  #dev2bitmap(file="qqplotter2.png",res=150)
   #dev.copy2eps(file="qqplotter2.eps")
 
   invisible(mu.qp.rcm)
@@ -1282,19 +1321,19 @@ qplotres <- function(mu.qp=NULL,x.0=1,sim.rng=TRUE,
   lowres <- is.element(as.character(attr(mu.qp.res,"experiment")),
                                      "lowres")
   Xn <- estquantiles(mu.qp)
-  pd0 <- pointdensity(Xn,mu.qp,res=3)
+  pd0 <- pointdensity(Xn,mu.qp,resol=3)
   contour(pd0$x,pd0$y,pd0$z,add=TRUE,lev=seq(25,20000,by=500))
   Xn <- estquantiles(mu.qp.res)
-  pd1 <- pointdensity(Xn[,lowres],mu.qp.res[,lowres],res=1)
+  pd1 <- pointdensity(Xn[,lowres],mu.qp.res[,lowres],resol=1)
   contour(pd1$x,pd1$y,pd1$z,add=TRUE,col="darkblue",lev=seq(25,20000,by=500))
-  pd2 <- pointdensity(Xn[,!lowres],mu.qp.res[,!lowres],res=1)
+  pd2 <- pointdensity(Xn[,!lowres],mu.qp.res[,!lowres],resol=1)
   contour(pd2$x,pd2$y,pd2$z,add=TRUE,col="steelblue",lev=seq(25,20000,by=500))
   lines(c(0,900),c(0,900),col="grey",lty=2)
   grid()
   
   # Saved the graphics"
-  dev2bitmap(file="qqplotter3.pdf",type="pdfwrite")
-  dev2bitmap(file="qqplotter3.png",res=150)
+  #dev2bitmap(file="qqplotter3.pdf",type="pdfwrite")
+  #dev2bitmap(file="qqplotter3.png",res=150)
   #dev.copy2eps(file="qqplotter3.eps")
 
   invisible(mu.qp.res)
@@ -1317,6 +1356,7 @@ niceqqplot <- function(mu.qp,col.axis="black",addcont=TRUE,addfit=TRUE,
   N <- dim(mu.qp)[2]
   attr(mu.qp,colourcoding) -> crit
   crit[!is.finite(crit)] <- 0
+  crit[crit > quantile(crit,0.99,na.rm=TRUE)] <- quantile(crit,0.99,na.rm=TRUE)
   attr(mu.qp,"mu") ->  mu
   if (!is.null(p))
     ip <- max( (1:dim(mu.qp)[1])[attr(mu.qp,"probabilities")<=p]) else
@@ -1506,7 +1546,7 @@ grid()
 if (!europe2) {
   print("Table of countries included:")
   country <- table(as.character(attr(MU.qp,"country")))
-  country.codes <- read.fwf("http://www.ncdc.noaa.gov/oa/climate/research/gdcn/Appendix_A_V1_0.txt",width=c(3,3,24),col.names=c("code","dash","country"))
+  country.codes <- read.fwf("http://www.ncdc.noaa.gov/oa/climate/research/gdcn/Appendix_A_V1_0.txt",widths=c(3,3,24),col.names=c("code","dash","country"))
   categories <- rownames(country)
   contries <- rep("NA",length(categories))
   for (i in 1:length(categories)) {

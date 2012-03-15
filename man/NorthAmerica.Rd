@@ -6,6 +6,7 @@
 \alias{qpAnywhere}
 \alias{rqstats}
 \alias{exploreqmodel}
+\alias{qqsplit}
 \title{Mapping qqplotter results for North America.}
 \description{
   The function \code{makemaps} uses the kriging methods from the
@@ -56,12 +57,13 @@ modelqPCs(mu.qp=NULL,keep.longest=TRUE,
              Eval.Region=c("NAmerica","WestEurope","EastEurope","Brazil",
                            "S.E.Asia"))
 qqscenario(result=NULL,type=c("dq95dw/q95dw","q95dw.sce"))
-qqatribution(mu.qp=NULL,result=NULL,
+qqatribution(mu.qp=NULL,result=NULL,shadow=FALSE,
              path="~/GDCN/",x.0=1,months=NULL)
 qpAnywhere(lon,lat,mu.qp=NULL,p=0.95)
-rqstats(mu.qp=NULL,result=NULL,
+rqstats(mu.qp=NULL,result=NULL,shadow=FALSE,
                     path="~/GDCN/",x.0=1,months=NULL)
 exploreqmodel(mu.qp=NULL,result=NULL)
+qqsplit(p=0.95)
 }
 
 \arguments{
@@ -101,6 +103,8 @@ exploreqmodel(mu.qp=NULL,result=NULL)
   and differences. The possible choices are:
   c("dq95","q95.sce","dq95/q95","q95dw","q95dw.sce",
   "dq95dw","dq95dw/q95dw","q95dw.sce/q95dw")}.
+
+\item{shadow}{For producing more fancy plots - pure visual effect.}
 }
 
 \value{The output from \code{\link[fields]{predict.surface}} in \code{\link{fields}}.

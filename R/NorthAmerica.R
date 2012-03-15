@@ -555,68 +555,70 @@ modelqPCs <- function(mu.qp=NULL,keep.longest=TRUE,
   addland()
   dev2bitmap("pca-PC1-world-independent.png")
 
-  print("Global analysis:")
+  if (sum(!idep)>100) {
+    print("Global analysis:")
+    print(sum(!idep))
 # Make a model based on the PCA for the whole world, but only use the
 # subset of dependent variables: Capital 1st letter for global stuff
-  Modelexpr1 <- paste("P",substr(modelexpr1,2,nchar(modelexpr1)-1),
+    Modelexpr1 <- paste("P",substr(modelexpr1,2,nchar(modelexpr1)-1),
                       ".dep)",sep="")
-  eval(parse(text=Modelexpr1))
-  Pc1.hat <- predict(Pc1model,newdata=calibr.ind)
-  Modelexpr2 <- paste("P",substr(modelexpr2,2,nchar(modelexpr2)-1),
+    eval(parse(text=Modelexpr1))
+    Pc1.hat <- predict(Pc1model,newdata=calibr.ind)
+    Modelexpr2 <- paste("P",substr(modelexpr2,2,nchar(modelexpr2)-1),
                       ".dep)",sep="")
-  eval(parse(text=Modelexpr2))
-  Pc2.hat <- predict(Pc2model,newdata=calibr.ind)
+    eval(parse(text=Modelexpr2))
+    Pc2.hat <- predict(Pc2model,newdata=calibr.ind)
 
 # checking quantile data
-  Pr<- attr(mu.qp.world.jjas,'probabilities'); II<-Pr==.95
-  Q95.all<- c(mu.qp.world.jjas[II,-exclude])
-  Pr<- attr(mu.qp,'probabilities'); ii<-Pr==.95
-  excl <- attr(mu.qp,'exclude')
-  if (length(excl)==0) q95 <- c(mu.qp[ii,]) else
-                       q95 <- c(mu.qp[ii,-excl])
+    Pr<- attr(mu.qp.world.jjas,'probabilities'); II<-Pr==.95
+    Q95.all<- c(mu.qp.world.jjas[II,-exclude])
+    Pr<- attr(mu.qp,'probabilities'); ii<-Pr==.95
+    excl <- attr(mu.qp,'exclude')
+    if (length(excl)==0) q95 <- c(mu.qp[ii,]) else
+                         q95 <- c(mu.qp[ii,-excl])
   
-  q95.ext <- qPCA2quantile(cbind(Pc1.hat,Pc2.hat),pca.all,p=0.95)
+    q95.ext <- qPCA2quantile(cbind(Pc1.hat,Pc2.hat),pca.all,p=0.95)
 #  q95.ind <- qPCA2quantile(pca.all$v[!idep,1:2],pca.all,p=0.95)
-  q95.ind <- Q95.all[!idep]
+    q95.ind <- Q95.all[!idep]
 
-  print(c(length(q95.hat),length(q95)))
+    print(c(length(q95.hat),length(q95)))
   
   #Evaluate the prediction of out-of-sample q95:
-  dev.new()
-  plot(q95.ext,Q95.all[!idep],
-       ylab="Actual q95",xlab="predicted q95",
-       main="Evaluation of q95-prediction",
-       sub=paste(sub="modelqPCs(); N(ind)=",length(q95.ext),
-             " N(dep)=",length(q95)),
-       xlim=c(0,200),ylim=c(0,200),pch=19,col="blue")
-  points(q95.hat,q95,pch=19,col="red")
-  lines(c(0,600),c(0,600))
-  stats <- cor.test(c(q95.ext),c(Q95.all[!idep]))
-  print(stats)
-  text(10,190,paste("r=",round(stats$estimate,2),"(",
-                   round(stats$conf.int[1],2),"  -  ",
-                   round(stats$conf.int[2],2),")"),pos=4)
-  text(10,175,paste("p-value=",round(100*stats$p.value,2),"%"),pos=4)
-  legend(165,20,c("Independent","Dependent"),pch=19,col=c("blue","red"),
-                  cex=0.7,bg="grey95")
-  dev2bitmap("modelqPCs-evaluation.png")
+    dev.new()
+    plot(q95.ext,Q95.all[!idep],
+         ylab="Actual q95",xlab="predicted q95",
+         main="Evaluation of q95-prediction",
+         sub=paste(sub="modelqPCs(); N(ind)=",length(q95.ext),
+               " N(dep)=",length(q95)),
+         xlim=c(0,200),ylim=c(0,200),pch=19,col="blue")
+    points(q95.hat,q95,pch=19,col="red")
+    lines(c(0,600),c(0,600))
+    stats <- cor.test(c(q95.ext),c(Q95.all[!idep]))
+    print(stats)
+    text(10,190,paste("r=",round(stats$estimate,2),"(",
+                     round(stats$conf.int[1],2),"  -  ",
+                     round(stats$conf.int[2],2),")"),pos=4)
+    text(10,175,paste("p-value=",round(100*stats$p.value,2),"%"),pos=4)
+    legend(165,20,c("Independent","Dependent"),pch=19,col=c("blue","red"),
+                    cex=0.7,bg="grey95")
+    dev2bitmap("modelqPCs-evaluation.png")
   
   # Meta-data for passing vector as statistic to makemap()
   # Insert [-exclude] to acount for NA-data removed in qPCA.
-  attr(q95.ind,'name') <- "q95"
-  attr(q95.ind,'longitude') <-
+    attr(q95.ind,'name') <- "q95"
+    attr(q95.ind,'longitude') <-
     attr(mu.qp.world.jjas,'longitude')[-exclude][!idep]
-  attr(q95.ind,'latitude') <-
+    attr(q95.ind,'latitude') <-
     attr(mu.qp.world.jjas,'latitude')[-exclude][!idep]
-  attr(q95.ind,'station_number') <-
-      attr(mu.qp.world.jjas,'station_number')[-exclude][!idep]
+    attr(q95.ind,'station_number') <-
+    attr(mu.qp.world.jjas,'station_number')[-exclude][!idep]
 
-  attr(q95.ext,'name') <- "q95.pred"
-  attr(q95.ext,'longitude') <-
+    attr(q95.ext,'name') <- "q95.pred"
+    attr(q95.ext,'longitude') <-
     attr(mu.qp.world.jjas,'longitude')[-exclude][!idep]
-  attr(q95.ext,'latitude') <-
+    attr(q95.ext,'latitude') <-
     attr(mu.qp.world.jjas,'latitude')[-exclude][!idep]
-  attr(q95.ext,'station_number') <-
+    attr(q95.ext,'station_number') <-
       attr(mu.qp.world.jjas,'station_number')[-exclude][!idep]
 
 
@@ -723,7 +725,7 @@ modelqPCs <- function(mu.qp=NULL,keep.longest=TRUE,
                  keep.longest=keep.longest,
                  lon.rng=c(0,40),lat.rng=c(-45,-20))
   }
-  
+  }
   
   print("Save the results:")
   result <- list(pc1model=pc1model,pc2model=pc2model,pca=pca.cal,
@@ -985,7 +987,7 @@ qqscenario <- function(result=NULL,type=c("dq95dw/q95dw","q95dw.sce")) {
 
 
 
-qqatribution <- function(mu.qp=NULL,result=NULL,
+qqatribution <- function(mu.qp=NULL,result=NULL,shadow=FALSE,
                          path="~/GDCN/",x.0=1,months=NULL) {
   require( PrecipStat)
 
@@ -1054,7 +1056,8 @@ qqatribution <- function(mu.qp=NULL,result=NULL,
        ylab="wet-day q95 (mm/day)",xlab="year",
        main=paste("Station #",stnr,"prediction of q95(t)"),
        sub="prediction of PCs 1&2; reconstruction of q95")
-  Lines(pentads,q95.hat)
+  if (shadow) Lines(pentads,q95.hat) else
+              lines(pentads,q95.hat,lwd=3)
   Points(pentads,q95)
   
   stats <- cor.test(c(q95),c(q95.hat))
@@ -1068,6 +1071,8 @@ qqatribution <- function(mu.qp=NULL,result=NULL,
          c("predicted","observed"),pch=c(26,19),
          col=c("black","grey"),lty=c(1,0),lwd=3,cex=0.7,bg="grey95")
   dev2bitmap("qqatribution-evaluation.png",res=150)
+
+  invisible(X)
 }
 
 
@@ -1193,7 +1198,7 @@ exploreqmodel <- function(mu.qp=NULL,result=NULL) {
 
 
 
-rqstats <- function(mu.qp=NULL,result=NULL,
+rqstats <- function(mu.qp=NULL,result=NULL,shadow=FALSE,
                     path="~/GDCN/",x.0=1,months=NULL) {
   require( PrecipStat)
 
@@ -1215,7 +1220,7 @@ rqstats <- function(mu.qp=NULL,result=NULL,
       load("rqstats.temp.rda")
       print("continuing on previously unfinished results")
       print(paste("i1=",i1,"N=",N))
-    } else i1 <- 1
+    } 
           
     for (i in i1:N) {
       stnr <- attr(mu.qp,'station_number')[i]
@@ -1274,8 +1279,8 @@ rqstats <- function(mu.qp=NULL,result=NULL,
     file.remove("rqstats.temp.rda")
     save(file="rqstats.rda",rq,rn)
   } else load("rqstats.rda")
-  dev2bitmap("qqtimeseries-correlations.png",res=150)
   
+  N <- length(rq)
   h0 <- hist(rn); h1 <- hist(rq)
   
   # Plot the comparison
@@ -1283,9 +1288,71 @@ rqstats <- function(mu.qp=NULL,result=NULL,
        ylab="Counts",xlab="Correlation",
        main="Skill of prediction of q95(t)",
        sub=paste(N,"stations"))
-  Lines(h1$mids,h1$counts)
+  if (!shadow) lines(h1$mids,h1$counts,lwd=4) else 
+               Lines(h1$mids,h1$counts)
   lines(h0$mids,h0$counts,lty=2,col="red")
   
   dev2bitmap("qqtimeseries-evaluation.png",res=150)
 }
 
+qqsplit <- function(p=0.95) {
+# Tests to what extent is the model able to predict extreme values for
+# an independent dataset  by splitting the sample into two batches
+
+# Use the US data: all seasons - make sure that n.wet > 1000
+print("Get mu.qp:")
+data(mu.qp)
+mu.qp <- qweed(mu.qp)
+
+# Re-size the data: keep 10,000 stations for simplicity:
+d <- dim(mu.qp)
+attr(mu.qp,'index') <- 1:d[2]
+Nmax <- 2*trunc(d[2]/2)
+mu.qp <- qweed(mu.qp,crit=paste("attr(mu.qp,'index') <=",Nmax))
+attr(mu.qp,'index') <- 1:Nmax
+mu.qp1 <- qweed(mu.qp,crit=paste("attr(mu.qp,'index') <=",Nmax/2))
+mu.qp2 <- qweed(mu.qp,crit=paste("attr(mu.qp,'index') >",Nmax/2))
+
+# Applu PCA to batch #1 and then subject to a regression analysis:
+pca1 <- qPCA(mu.qp1,plot=FALSE)
+dependent <- data.frame(pc1=pca1$v[,1],
+                        pc2=pca1$v[,2],
+                        mu=attr(mu.qp1,"mu"),
+                        n.wet=attr(mu.qp1,"n.wet"),
+                        alt=attr(mu.qp1,"altitude"),
+                        d2c=attr(mu.qp1,"dist2coast.km"))
+pc1model <- lm(pc1 ~ mu + n.wet + alt + d2c,data=dependent)
+pc2model <- lm(pc2 ~ mu + n.wet + alt + d2c,data=dependent)
+
+print("Model calibrated:")
+print(summary(pc1model))
+
+# Use batch#2 as independent data (out-of-sample) for predicting values for
+# PC loadings:
+independent <- data.frame(mu=attr(mu.qp2,"mu"),
+                       n.wet=attr(mu.qp2,"n.wet"),
+                       alt=attr(mu.qp2,"altitude"),
+                       d2c=attr(mu.qp2,"dist2coast.km"))
+
+pc1 <- predict(pc1model,newdata=independent)
+pc2 <- predict(pc2model,newdata=independent)
+PC.est <- cbind(pc1,pc2)
+
+# Use these PC-loading estimates together with original EOFs to predict q95:
+qPCA2quantile(PC.est,pca1,p=p,silent=TRUE) -> qp
+x1 <- mu.qp2[is.element(attr(mu.qp2,'probabilities'),p),]
+
+plot(qp,x1,pch=19,main=paste("Out-of-sample comparison of q",p*100,sep=""),
+     xlab="Predicted (mm/day)",ylab="observed (mm/day)",
+     sub=paste("Region: USA;",Nmax/2,"stations in each batch"),
+     xlim=c(0,100),ylim=c(0,100))
+lines(c(0,300),c(0,300),col="grey",lty=2)
+
+r <- cor.test(x1,qp)
+
+text(0,100,paste("r=",round(r$estimate,2),"(",
+                      round(r$conf.int[1],2),"  -  ",
+                      round(r$conf.int[2],2),")"),pos=4)
+mtext(side=4,"qqplotteR: qqsplit()",col="grey")
+
+}

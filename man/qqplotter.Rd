@@ -8,6 +8,11 @@
 \alias{compare1q}
 \title{Quantile-quantile plots for 24-hr precip assuming exponential distribution}
 \description{
+Computer code for the analysis presented in Benestad, R.E., D. Nychka
+and L.O. Mearns, 'Specification of wet-day daily rainfall quantiles from
+the mean value', Tellus A, 64, 14981, DOI: 10.3402/tellusa.v64i0.14981
+\url{http://www.tellusa.net/index.php/tellusa/article/view/14981} and
+related studies. 
    
 \code{qqplotter} - carries out diverse jobs, such as box qq-plots, calls
 qplorGDCN, \code{\link{qPCA}}, niceqqplot, etc. This function generates

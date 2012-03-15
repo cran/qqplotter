@@ -7,6 +7,7 @@
 \alias{qplotMC}
 \alias{mapofstations}
 \alias{qcat}
+\alias{qsubset}
 \alias{qweed}
 \alias{cleanduplicates}
 \alias{dist2coast}
@@ -33,10 +34,14 @@
    Extreme Rainfall over Northern Europe' , \emph{Climate Research},
    \bold{CR34}:195-210, doi: 10.3354/cr00693,
    \url{http://www.google.com/url?q=http\%3A\%2F\%2Fwww.int-res.com\%2Farticles\%2Fcr_oa\%2Fc034p195.pdf&sa=D&sntz=1&usg=AFQjCNEwNhTO47jhNOqQJ9OgoneQb7KKFA};
+   
      Benestad, R.E. (2010) 'Downscaling Precipitation Extremes:
    Correction of Analog Models through PDF Predictions', \emph{Theor. \&
    Appl. Clim.}, \bold{Volume 100}, Issue 1, DOI:
- 10.1007/s00704-009-0158-1. \url{http://www.google.com/url?q=http\%3A\%2F\%2Fwww.springerlink.com\%2Fcontent\%2Fy65j54125146p95g\%2F&sa=D&sntz=1&usg=AFQjCNG1zv8FinCFtwlE3rtvF0d_bm_FfQ}]
+ 10.1007/s00704-009-0158-1. \url{http://www.google.com/url?q=http\%3A\%2F\%2Fwww.springerlink.com\%2Fcontent\%2Fy65j54125146p95g\%2F&sa=D&sntz=1&usg=AFQjCNG1zv8FinCFtwlE3rtvF0d_bm_FfQ};
+
+Benestad, R.E., D. Nychka and L.O. Mearns, 'Specification of wet-day daily rainfall quantiles from the mean value', Tellus A, 64, 14981, DOI: 10.3402/tellusa.v64i0.14981 \url{http://www.tellusa.net/index.php/tellusa/article/view/14981}
+ ]
 
    The functions in this package are as follows:
    
@@ -53,7 +58,7 @@ coding is flexiple; quantiles, mean precip, or scenarios for the future.
 combines two results and the other is used for weeding out stations,
 e.g. with a low number of wet days. \code{cleanduplicates} removes
 duplicated locations, keeping the stations with the highest number of
-wet days (data).
+wet days (data). \code{qsubset} extracts a subset of the percentiles.
 
 \code{estquantiles} and \code{fitsimple} - the main functions for
 computing quantiles, setting the variable \code{x1} to hold \deqn{q_p =
@@ -83,6 +88,7 @@ qPCA2quantile(x,pca,p=0.95,silent=FALSE)
 mapofstations(mu.qp,colourcoding="0.95",add=FALSE,silent=FALSE,
               googleearth=FALSE,kmz.file="~/Desktop/qqplotter.kmz")
 qcat(mu.qp1,mu.qp2)
+qsubset(mu.qp,crit="attr(mu.qp,'probabilities') <= 0.99")
 qweed(mu.qp,crit="attr(mu.qp,'n.wet')> 1000")
 cleanduplicates(mu.qp,silent=TRUE,plot=FALSE)
 dist2coast(mu.qp)
